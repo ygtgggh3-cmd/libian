@@ -24,8 +24,9 @@ jobs:
             dosfstools mtools
       - name: Configure Debian Live
         run: |
-          sudo lb clean --purge
+         sudo lb clean --purge
           sudo lb config \
+            --ignore-system-defaults \
             --mode debian \
             --distribution trixie \
             --architectures amd64 \
@@ -34,7 +35,9 @@ jobs:
             --archive-areas "main contrib non-free-firmware" \
             --mirror-bootstrap https://deb.debian.org/debian/ \
             --mirror-chroot https://deb.debian.org/debian/ \
-            --mirror-binary https://deb.debian.org/debian/
+            --mirror-chroot-security https://security.debian.org/debian-security/ \
+            --mirror-binary https://deb.debian.org/debian/ \
+            --mirror-binary-security https://security.debian.org/debian-security/
       - name: Build ISO
         run: |
           sudo lb build
