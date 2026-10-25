@@ -24,11 +24,12 @@ jobs:
             dosfstools mtools
       - name: Configure Debian Live
         run: |
-         sudo lb clean --purge
+           sudo lb clean --purge
           sudo lb config \
             --ignore-system-defaults \
             --mode debian \
             --distribution trixie \
+            --parent-distribution trixie \
             --architectures amd64 \
             --binary-images iso-hybrid \
             --debian-installer live \
