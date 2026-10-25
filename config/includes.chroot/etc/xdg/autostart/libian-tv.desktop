@@ -1,0 +1,7 @@
+[Desktop Entry]
+Type=Application
+Name=LIBIAN TV
+Comment=Interfaz de televisión de LIBIAN TV
+Exec=/usr/local/bin/libian-tv
+Terminal=false
+X-GNOME-Autostart-enabled=true

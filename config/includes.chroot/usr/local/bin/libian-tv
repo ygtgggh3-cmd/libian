@@ -1,0 +1,118 @@
+#!/usr/bin/python3
+import os
+import subprocess
+import gi
+
+gi.require_version("Gtk", "3.0")
+from gi.repository import Gtk, Gdk, GLib
+
+CSS = b'''
+window { background-color: #05070b; color: #f5f7fb; }
+.title { color: #f7f8fc; font-size: 28px; font-weight: bold; }
+.subtitle { color: #9ba8bd; font-size: 13px; }
+.tile { border-radius: 14px; border: 2px solid #263247; background-image: none; background-color: #101827; color: #ffffff; padding: 18px; }
+.tile:focus, .tile:hover { border: 3px solid #8ab4ff; background-color: #1c2940; }
+.tile-title { font-size: 19px; font-weight: bold; }
+.tile-desc { color: #c1cad8; font-size: 12px; }
+'''
+provider = Gtk.CssProvider()
+provider.load_from_data(CSS)
+Gtk.StyleContext.add_provider_for_screen(
+    Gdk.Screen.get_default(), provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION
+)
+
+class LibianTV(Gtk.Window):
+    def __init__(self):
+        super().__init__(title="LIBIAN TV")
+        self.set_default_size(1280, 720)
+        self.fullscreen()
+        self.connect("key-press-event", self.on_key)
+        outer = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=20)
+        outer.set_border_width(28)
+        self.add(outer)
+
+        header = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=16)
+        brand = Gtk.Label()
+        brand.set_markup('<span foreground="#ffffff" size="xx-large" weight="bold">▣ LIBIAN <span foreground="#5b9dff">TV</span></span>')
+        brand.set_xalign(0)
+        header.pack_start(brand, True, True, 0)
+        tagline = Gtk.Label(label="Ligero  •  Debian  •  Para todos")
+        tagline.get_style_context().add_class("subtitle")
+        header.pack_end(tagline, False, False, 0)
+        outer.pack_start(header, False, False, 0)
+
+        greeting = Gtk.Label(label="¿Qué querés hacer hoy?")
+        greeting.set_xalign(0)
+        greeting.get_style_context().add_class("title")
+        outer.pack_start(greeting, False, False, 0)
+
+        grid = Gtk.Grid()
+        grid.set_row_spacing(14)
+        grid.set_column_spacing(14)
+        outer.pack_start(grid, True, True, 0)
+
+        tiles = [
+            ("▶  YouTube", "Videos y canales", self.open_youtube, "#a91d2a"),
+            ("▣  Streaming", "Servicios en línea", self.open_streaming, "#133d78"),
+            ("▤  USB / Videos", "Abrir archivos multimedia", self.open_files, "#087b58"),
+            ("🎮  Juegos", "Juegos sencillos", self.open_games, "#5425a5"),
+            ("▦  Aplicaciones", "Navegador y herramientas", self.open_apps, "#a45a08"),
+            ("⚙  Ajustes", "Configuración del sistema", self.open_settings, "#34445a"),
+        ]
+        for index, (title, desc, callback, color) in enumerate(tiles):
+            button = Gtk.Button()
+            button.get_style_context().add_class("tile")
+            button.set_size_request(250, 125)
+            box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
+            name = Gtk.Label(label=title)
+            name.set_xalign(0)
+            name.get_style_context().add_class("tile-title")
+            detail = Gtk.Label(label=desc)
+            detail.set_xalign(0)
+            detail.get_style_context().add_class("tile-desc")
+            box.pack_start(name, True, True, 0)
+            box.pack_start(detail, False, False, 0)
+            button.add(box)
+            button.connect("clicked", lambda _b, cb=callback: cb())
+            grid.attach(button, index % 3, index // 3, 1, 1)
+
+        footer = Gtk.Label(label="LIBIAN TV • Prototipo inicial • Esc para salir del modo pantalla completa")
+        footer.get_style_context().add_class("subtitle")
+        footer.set_xalign(0)
+        outer.pack_end(footer, False, False, 0)
+        first = grid.get_children()[0]
+        first.grab_focus()
+
+    def launch(self, *args):
+        try:
+            subprocess.Popen(args, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        except Exception as exc:
+            dialog = Gtk.MessageDialog(
+                transient_for=self, flags=0, message_type=Gtk.MessageType.ERROR,
+                buttons=Gtk.ButtonsType.OK, text="No se pudo abrir la aplicación"
+            )
+            dialog.format_secondary_text(str(exc))
+            dialog.run()
+            dialog.destroy()
+
+    def browser(self, url):
+        self.launch("firefox-esr", "--new-window", url)
+
+    def open_youtube(self, *_): self.browser("https://www.youtube.com/")
+    def open_streaming(self, *_): self.browser("https://www.netflix.com/")
+    def open_files(self, *_): self.launch("vlc", os.path.expanduser("~/"))
+    def open_games(self, *_): self.launch("gcompris")
+    def open_apps(self, *_): self.launch("thunar")
+    def open_settings(self, *_): self.launch("xfce4-settings-manager")
+
+    def on_key(self, _window, event):
+        if event.keyval == Gdk.KEY_Escape:
+            self.unfullscreen()
+        elif event.keyval == Gdk.KEY_F11:
+            self.fullscreen()
+        return False
+
+win = LibianTV()
+win.connect("destroy", Gtk.main_quit)
+win.show_all()
+Gtk.main()

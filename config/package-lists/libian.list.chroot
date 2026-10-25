@@ -1,0 +1,37 @@
+# Entorno gráfico y sesión
+xorg
+xfce4
+xfce4-terminal
+lightdm
+lightdm-gtk-greeter
+dbus-x11
+network-manager
+network-manager-gnome
+sudo
+
+# Lanzador y herramientas
+python3
+python3-gi
+gir1.2-gtk-3.0
+desktop-file-utils
+fonts-dejavu
+adwaita-icon-theme
+
+# Navegación y multimedia
+firefox-esr
+vlc
+mpv
+kodi
+thunar
+gvfs
+udisks2
+
+# Herramientas y juegos pequeños
+nano
+less
+htop
+curl
+wget
+xterm
+gcompris
+aisleriot
