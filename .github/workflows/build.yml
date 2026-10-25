@@ -1,0 +1,48 @@
+name: Build LIBIAN TV ISO
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    steps:
+      - name: Get project
+        uses: actions/checkout@v4
+
+      - name: Install Debian Live build tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y live-build debootstrap xorriso squashfs-tools \
+            syslinux-common syslinux-utils isolinux grub-pc-bin grub-efi-amd64-bin \
+            dosfstools mtools
+      - name: Configure Debian Live
+        run: |
+          sudo lb config \
+            --distribution trixie \
+            --architectures amd64 \
+            --binary-images iso-hybrid \
+            --debian-installer live \
+            --archive-areas "main contrib non-free-firmware" \
+            --debootstrap-options "--variant=minbase"
+      - name: Build ISO
+        run: |
+          sudo lb build
+          sudo chown -R "$USER":"$USER" .
+          mkdir -p output
+          find . -maxdepth 1 -type f -name '*.iso' -exec cp -v {} output/libian-tv-amd64.iso \;
+          test -s output/libian-tv-amd64.iso
+          sha256sum output/libian-tv-amd64.iso | tee output/SHA256SUMS
+      - name: Upload ISO artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: libian-tv-iso
+          path: output/
+          if-no-files-found: error
+          retention-days: 7
