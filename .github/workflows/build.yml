@@ -24,13 +24,12 @@ jobs:
             dosfstools mtools
       - name: Configure Debian Live
         run: |
-          sudo lb config \
+         sudo lb config \
             --distribution trixie \
             --architectures amd64 \
             --binary-images iso-hybrid \
             --debian-installer live \
-            --archive-areas "main contrib non-free-firmware" \
-            --debootstrap-options "--variant=minbase"
+            --archive-areas "main contrib non-free-firmware"
       - name: Build ISO
         run: |
           sudo lb build
